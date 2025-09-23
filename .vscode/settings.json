@@ -1,0 +1,16 @@
+{
+    // Pytest zapnutý, ostatné vypnuté
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    // Testy hľadá v priečinku "tests"
+    "python.testing.pytestArgs": [
+        "-q",
+        "tests"
+    ],
+    // Zobrazenie výsledkov v editore
+    "testing.automaticallyOpenPeekView": "failure",
+    "testing.gutterEnabled": true,
+    // Test Explorer UI – autorun len pre zmenený súbor
+    "testExplorer.onSave": "test-file"
+}

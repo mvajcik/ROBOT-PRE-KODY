@@ -1,0 +1,14 @@
+sheet: AT_YTD
+anchor: C3
+layout: unknown
+rows_by: metric
+row_map: []
+cols_by:
+- '1234'
+- =C2*2
+source_view: TBD_view
+filters: country='AT', year=2025
+value: SUM(value)
+rounding: 0
+format: '#,##0;[Red]-#,##0'
+tolerance: 0.5

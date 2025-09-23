@@ -1,0 +1,5 @@
+row,col,cell,dtype,value_or_fx
+2,2,B2,text,Hello
+2,3,C2,number,1234
+2,4,D2,formula,=C2*2
+2,5,E2,blank,

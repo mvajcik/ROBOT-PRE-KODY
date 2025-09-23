@@ -1,0 +1,7 @@
+fixes:
+  - key: normalize_month_names
+  - key: trim_header_spaces
+  - key: fix_bih_date_parsing
+  - key: value_from_formula_if_empty
+  - key: patch_fill_value_from_formula
+  - key: monkeypatch_scan_block_value_from_formula
