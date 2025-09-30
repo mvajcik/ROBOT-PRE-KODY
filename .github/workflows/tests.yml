@@ -35,14 +35,14 @@ src = [l.rstrip() for l in open("requirements.txt")]
 flt = []
 for l in src:
     s = l.strip()
-    # odfiltruj lokálne/self odkazy (rôzne tvary)
+    # odfiltruj lokálne/self odkazy (-e ., . alebo "@ file:")
     if not s or s.startswith("#"):
         flt.append(l); continue
-    if re.match(r"^(-e +\.)$", s):          # "-e ."
+    if re.match(r"^(-e +\.)$", s):
         continue
-    if s == ".":                            # "."
+    if s == ".":
         continue
-    if re.search(r"@ *file:", s, re.I):     # "pkg @ file:."
+    if re.search(r"@ *file:", s, re.I):
         continue
     flt.append(l)
 open("requirements.ci.txt","w").write("\n".join(flt) + "\n")
