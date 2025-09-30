@@ -30,33 +30,35 @@ jobs:
           echo "== requirements.txt =="
           cat requirements.txt
           python - <<'PY'
-import re
-src = [l.rstrip() for l in open("requirements.txt")]
-flt = []
-for l in src:
-    s = l.strip()
-    # odfiltruj lokálne/self odkazy (-e ., . alebo "@ file:")
-    if not s or s.startswith("#"):
-        flt.append(l); continue
-    if re.match(r"^(-e +\.)$", s):
-        continue
-    if s == ".":
-        continue
-    if re.search(r"@ *file:", s, re.I):
-        continue
-    flt.append(l)
-open("requirements.ci.txt","w").write("\n".join(flt) + "\n")
-print("== requirements.ci.txt ==")
-print(open("requirements.ci.txt").read())
+          import re
+          src = [l.rstrip() for l in open("requirements.txt")]
+          flt = []
+          for l in src:
+              s = l.strip()
+              # odfiltruj lokálne/self odkazy (-e ., . alebo "@ file:")
+              if not s or s.startswith("#"):
+                  flt.append(l); continue
+              if re.match(r"^(-e +\.)$", s):
+                  continue
+              if s == ".":
+                  continue
+              if re.search(r"@ *file:", s, re.I):
+                  continue
+              flt.append(l)
+          open("requirements.ci.txt","w").write("\n".join(flt) + "\n")
+          print("== requirements.ci.txt ==")
+          print(open("requirements.ci.txt").read())
 PY
           pip install -r requirements.ci.txt
 
       - name: Run tests (quick)
         env:
           PYTHONPATH: src
-        run: pytest -q tests/test_smoke.py tests/test_scanner.py
+        run: |
+          pytest -q tests/test_smoke.py tests/test_scanner.py
 
       - name: Run tests (full)
         env:
           PYTHONPATH: src
-        run: pytest -q -k "not test_autorun_fail"
+        run: |
+          pytest -q -k "not test_autorun_fail"
