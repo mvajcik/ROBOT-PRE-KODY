@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot-pre-kody"
+version = "0.0.1"
+requires-python = ">=3.11"
+dependencies = [
+  "typer>=0.12",
+  "openpyxl",
+  "pandas",
+  "duckdb",
+  "rich"
+]
+
+[project.scripts]
+robot = "robot_cli.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
