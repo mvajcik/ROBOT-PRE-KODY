@@ -1,12 +1,27 @@
-.venv
-.cache/
-Library/
-.Trash/
-.cache/
-Library/
-.Trash/
+# ---------- .gitignore (Robot pre kody) ----------
 
-.venv
-.cache/
-Library/
-.Trash/
+# OS / editor súbory
+.DS_Store
+.vscode/
+
+# Python cache / build artefakty
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtuálne prostredie
+.venv/
+
+# Výstupy nášho projektu (generované, netreba v gite)
+data_out/
+data_tmp/
+
+# Lokálne poznámky alebo scratch notebooky
+*.ipynb_checkpoints/
+tests/Untitled-*.ipynb
+
+# ---------- koniec ----------
