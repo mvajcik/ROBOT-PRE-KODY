@@ -105,6 +105,7 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
             "Value":   pd.Series(dtype="float64"),
         })
         audit = pd.DataFrame(columns=["level", "message"])
+        return out_df, audit
 
         
     # ---------------------------------------------------------------------------
