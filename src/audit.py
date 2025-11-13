@@ -1,10 +1,11 @@
 # src/audit.py
 from __future__ import annotations
+
 import argparse
 import csv
 import re
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
 
 Row = Dict[str, str]
 
@@ -64,7 +65,9 @@ def audit_sum_equals_total(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Audit log over cell-map CSV.")
-    ap.add_argument("--csv", required=True, help="Path to cell-map CSV (sheet,row,col,value,formula)")
+    ap.add_argument(
+        "--csv", required=True, help="Path to cell-map CSV (sheet,row,col,value,formula)"
+    )
     ap.add_argument("--out", default="data_out/audit.txt", help="Path to audit text log")
     ap.add_argument("--sum-rows", required=True, help="e.g. 2:6 (inclusive)")
     ap.add_argument("--sum-cols", required=True, help="Comma separated, e.g. B,C,D,E")
@@ -77,7 +80,9 @@ def main() -> None:
     try:
         r1, r2 = (int(x) for x in args.sum_rows.split(":"))
     except Exception as e:
-        raise ValueError(f"--sum-rows musí byť vo formáte 'start:end', dostal som: {args.sum_rows!r}") from e
+        raise ValueError(
+            f"--sum-rows musí byť vo formáte 'start:end', dostal som: {args.sum_rows!r}"
+        ) from e
 
     # 2) zoznam stĺpcov
     cols = [c.strip().upper() for c in args.sum_cols.split(",") if c.strip()]

@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 # --- Normalizácia období pre DuckDB (bezpečná, neprepisuje pôvodný label) ---
 def _normalize_period(period_type: str, label: str, year_hint=None) -> str | None:
     """
@@ -11,7 +12,7 @@ def _normalize_period(period_type: str, label: str, year_hint=None) -> str | Non
     Ak label už obsahuje rok vo formáte 'YYYY-..', vrátime ho tak ako je (po ľahkej kontrole).
     """
     if not label:
-      return None
+        return None
 
     # ak už je to tvar 'YYYY-...' nechaj tak
     if isinstance(label, str) and len(label) >= 5 and label[:4].isdigit() and label[4] == "-":
@@ -46,18 +47,51 @@ def _normalize_period(period_type: str, label: str, year_hint=None) -> str | Non
 
     if t == "MONTH":
         m_map = {
-            "JANUARY":1,"JAN":1,"01":1,"1":1,
-            "FEBRUARY":2,"FEB":2,"02":2,"2":2,
-            "MARCH":3,"MAR":3,"03":3,"3":3,
-            "APRIL":4,"APR":4,"04":4,"4":4,
-            "MAY":5,"05":5,"5":5,
-            "JUNE":6,"JUN":6,"06":6,"6":6,
-            "JULY":7,"JUL":7,"07":7,"7":7,
-            "AUGUST":8,"AUG":8,"08":8,"8":8,
-            "SEPTEMBER":9,"SEP":9,"SEPT":9,"09":9,"9":9,
-            "OCTOBER":10,"OCT":10,"10":10,
-            "NOVEMBER":11,"NOV":11,"11":11,
-            "DECEMBER":12,"DEC":12,"12":12,
+            "JANUARY": 1,
+            "JAN": 1,
+            "01": 1,
+            "1": 1,
+            "FEBRUARY": 2,
+            "FEB": 2,
+            "02": 2,
+            "2": 2,
+            "MARCH": 3,
+            "MAR": 3,
+            "03": 3,
+            "3": 3,
+            "APRIL": 4,
+            "APR": 4,
+            "04": 4,
+            "4": 4,
+            "MAY": 5,
+            "05": 5,
+            "5": 5,
+            "JUNE": 6,
+            "JUN": 6,
+            "06": 6,
+            "6": 6,
+            "JULY": 7,
+            "JUL": 7,
+            "07": 7,
+            "7": 7,
+            "AUGUST": 8,
+            "AUG": 8,
+            "08": 8,
+            "8": 8,
+            "SEPTEMBER": 9,
+            "SEP": 9,
+            "SEPT": 9,
+            "09": 9,
+            "9": 9,
+            "OCTOBER": 10,
+            "OCT": 10,
+            "10": 10,
+            "NOVEMBER": 11,
+            "NOV": 11,
+            "11": 11,
+            "DECEMBER": 12,
+            "DEC": 12,
+            "12": 12,
         }
         s = str(label).strip().upper()
         m = m_map.get(s)
@@ -81,7 +115,7 @@ def _normalize_period(period_type: str, label: str, year_hint=None) -> str | Non
         if s.startswith("H"):
             try:
                 h = int(s[1:])
-                if h in (1,2):
+                if h in (1, 2):
                     return f"{y}-H{h}"
             except Exception:
                 return None
@@ -98,18 +132,19 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     raw_df = block if isinstance(block, pd.DataFrame) else None
 
     if raw_df is None or (hasattr(raw_df, "empty") and raw_df.empty):
-        out_df = pd.DataFrame({
-            "Country": pd.Series(dtype="string"),
-            "Week":    pd.Series(dtype="int64"),
-            "Metric":  pd.Series(dtype="string"),
-            "Value":   pd.Series(dtype="float64"),
-        })
+        out_df = pd.DataFrame(
+            {
+                "Country": pd.Series(dtype="string"),
+                "Week": pd.Series(dtype="int64"),
+                "Metric": pd.Series(dtype="string"),
+                "Value": pd.Series(dtype="float64"),
+            }
+        )
         audit = pd.DataFrame(columns=["level", "message"])
         return out_df, audit
 
-        
     # ---------------------------------------------------------------------------
-    
+
     """
     Transformuje naskenovaný Excel blok do normalizovaného formátu.
     v2: okrem týždňov (WEEK) podporuje aj MONTH / QUARTER / HALF, ak sú v headers.
@@ -176,26 +211,32 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
                             value = None
                             quality = "MISSING"
                             notes = "non-numeric"
-                            audit_rows.append({
-                                "level": "WARN",
-                                "block_id": block_id,
-                                "metric": metric_name,
-                                "period": label,
-                                "detail": f"Non-numeric value: {raw}",
-                            })
+                            audit_rows.append(
+                                {
+                                    "level": "WARN",
+                                    "block_id": block_id,
+                                    "metric": metric_name,
+                                    "period": label,
+                                    "detail": f"Non-numeric value: {raw}",
+                                }
+                            )
 
-                    rows.append({
-                        "Country": country,
-                        "Business": business,
-                        "Metric": metric_name,
-                        "PeriodType": period_type,
-                        "Period": label,          # v2: ponechávame label tak, ako prišlo (bez ďalšej normalizácie)
-                        "PeriodKey": _normalize_period(period_type, label, meta.get("year") or meta.get("year_hint")),
-                        "Value": value,
-                        "SourceBlockID": block_id,
-                        "QualityFlag": quality,
-                        "Notes": notes,
-                    })
+                    rows.append(
+                        {
+                            "Country": country,
+                            "Business": business,
+                            "Metric": metric_name,
+                            "PeriodType": period_type,
+                            "Period": label,  # v2: ponechávame label tak, ako prišlo (bez ďalšej normalizácie)
+                            "PeriodKey": _normalize_period(
+                                period_type, label, meta.get("year") or meta.get("year_hint")
+                            ),
+                            "Value": value,
+                            "SourceBlockID": block_id,
+                            "QualityFlag": quality,
+                            "Notes": notes,
+                        }
+                    )
 
     data = pd.DataFrame(rows)
     audit = pd.DataFrame(audit_rows)
