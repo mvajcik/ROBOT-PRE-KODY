@@ -1,5 +1,7 @@
 import pandas as pd
 
+from src.pipeline.loader import LoadedBlock, load_block
+
 
 # --- Normalizácia období pre DuckDB (bezpečná, neprepisuje pôvodný label) ---
 def _normalize_period(period_type: str, label: str, year_hint=None) -> str | None:
@@ -161,7 +163,7 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
         audit = pd.DataFrame(columns=["level", "message"])
         return _empty_contract_df(), audit
 
-    # prázdny / divný blok -> vráť len kontrakt
+        # prázdny / divný blok -> vráť len kontrakt
     cells = block.get("cells") or []
     headers = block.get("headers") or {}
     if not cells or not headers:
@@ -175,29 +177,20 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     rows: list[dict] = []
     audit_rows: list[dict] = []
 
-    # --- Meta
-    meta = block.get("meta", {}) or {}
-    country = meta.get("country_hint", "UNKNOWN")
-    business = meta.get("business_hint", "UNKNOWN")
-    block_id = meta.get("block_id", "NA")
+    # použijeme loader na prípravu meta údajov a map
+    loaded: LoadedBlock = load_block(block)
+
+    country = loaded.country
+    business = loaded.business
+    block_id = loaded.block_id
+    headers = loaded.headers
+    cells = loaded.cells
+    period_sets = loaded.period_sets
+    cell_map = loaded.cell_map
+    meta = loaded.meta
 
     # --- Headers
     metrics_col = (headers.get("static") or {}).get("Metric")
-
-    period_sets: list[tuple[str, list[dict]]] = []
-    if headers.get("weeks"):
-        period_sets.append(("WEEK", headers["weeks"]))
-    if headers.get("months"):
-        period_sets.append(("MONTH", headers["months"]))
-    if headers.get("quarters"):
-        period_sets.append(("QUARTER", headers["quarters"]))
-    if headers.get("halves"):
-        period_sets.append(("HALF", headers["halves"]))
-
-    # --- Preindexuj bunky pre rýchly prístup (row, col) -> value
-    cell_map: dict[tuple[int, int], object] = {}
-    for c in cells:
-        cell_map[(c["row"], c["col"])] = c.get("value", None)
 
     # --- Prejdi riadky, kde je definovaná metrika
     for cell in cells:

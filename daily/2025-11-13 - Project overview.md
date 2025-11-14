@@ -41,8 +41,12 @@ Project Overview: Robot pre kódy
 	•	Automatizovať QA (make qa / CI)
 	•	Budovať framework, nie jednorazové skripty
 
-🧩 Čo si má pamätať AI
-	•	Projekt má dva ciele: (1) šablóna/bez ping-pongu, (2) automatizácia celého controllingu.
-	•	Pracovné prostredie: Mac + Dell.
-	•	Aktívna vetva: feat/contract-safety.
-	•	Najbližší krok: opraviť transformácie + DuckDB testy.
+## 🌱 Čo si má pamätať AI
+
+- Projekt má dva hlavné ciele:
+  1) šablóna/flow, ktorý minimalizuje ping-pong pri tvorbe nástrojov,
+  2) postupná automatizácia celého controllingu (WR/DR/Inventory/Daily, YTD, CEO reporty).
+- Pracovné prostredie: Mac Studio (primárne) + Dell ako záloha.
+- Aktívna vetva: `master` (feature `feat/contract-safety` je mergnutá a stabilná).
+- Testy: 14/14 prechádza, CI (quick + full) je zapojené.
+- Aktuálny fokus: krok A – rozbiť `transform_block` na pipeline **loader → validator → transformer → exporter** bez zmeny kontraktu výstupu.
