@@ -1,0 +1,84 @@
+meta:
+  scanned_at: "2025-11-12 08:27:04"
+  root: "/Users/michalvajcik/Documents/robot-pre-kody"
+  git_repo: true
+  venv_present: true
+inventory:
+  dirs_present:
+    - "src"
+    - "tests"
+    - "data_in"
+    - "data_stage"
+    - "data_out"
+    - ".github"
+  files_present:
+    - "pyproject.toml"
+    - "requirements.txt"
+    - "Makefile"
+    - "pytest.ini"
+    - ".pre-commit-config.yaml"
+  ci_workflows:
+    - "tests.yml"
+metrics:
+  python_files_total: 37
+  python_lines_total: 2645
+  tests_count: 15
+  tests_files:
+    - "tests/test_transform.py"
+    - "tests/test_duckdb_io.py"
+    - "tests/test_scan_cli.py"
+    - "tests/test_scanner.py"
+    - "tests/test_period_normalization.py"
+    - "tests/test_robot.py"
+    - "tests/test_autorun.py"
+    - "tests/test_smoke.py"
+    - "tests/test_period_normalization_weeks.py"
+    - "tests/test_scan_edge_cases.py"
+    - "tests/test_transform_perf.py"
+    - "tests/test_period_normalization_quarters_halves.py"
+    - "tests/test_duckdb_select.py"
+    - "tests/test_transform_months.py"
+    - "tests/test_transform_contract_min.py"
+  per_dir:
+    src:
+      exists: true
+      py_files: 15
+      py_lines: 1459
+    tests:
+      exists: true
+      py_files: 17
+      py_lines: 587
+    data_in:
+      exists: true
+      py_files: 0
+      py_lines: 0
+    data_stage:
+      exists: true
+      py_files: 0
+      py_lines: 0
+    data_out:
+      exists: true
+      py_files: 0
+      py_lines: 0
+    .github:
+      exists: true
+      py_files: 0
+      py_lines: 0
+health_checks:
+  pytest:
+    ok: false
+    code: 1
+    out: ".FFFFFF.....F.FF                                                         [100%]\n=================================== FAILURES ===================================\n______________________________ test_autorun_fail _______________________________\n\n    def test_autorun_fail():\n>       assert 1 == 2\nE       assert 1 == 2\n\ntests/test_autorun.py:6: AssertionError\n______________ test_save_to_duckdb_creates_table_and_writes_rows _______________\n\ntmp_path = PosixPath('/private/var/folders/dt/qxf_5c9s6jg526y6wt5jx7sc0000gn/T/pytest-of-michalvajcik/pytest-1/test_save_to_duckdb_creates_ta0')\n\n    def test_save_to_duckdb_creates_table_and_writes_rows(tmp_path):\n        # mini blok -> DataFrame\n        block = {\n            "cells": [\n                {"row": 7, "col": 1, "value": "Turnover_EUR", "a1": "B8"},\n                {"row": 7, "col": 2, "value": "100", "a1": "C8"},  # W1\n                {"row": 7, "col": 3, "value": "200", "a1": "D8"},  # W2\n            ],\n            "headers": {\n                "static": {"Metric": 1},\n                "weeks": [{"col": 2, "label": "W1"}, {"col": 3, "label": "W2"}],\n            },\n            "meta": {"country_hint": "SK", "business_hint": "WR", "block_id": "blk-db-001", "year_hint": 2025},\n            "fixes": {}, "fallback_map": {},\n        }\n        df, audit = transform_block(block)\n        assert audit.empty\n    \n        db_path = str(tmp_path / "test.duckdb")\n        table = "fact_metrics"\n    \n        # write (replace for idempotency)\n        save_to_duckdb(df, db_path, table, mode="replace")\n    \n        # verify\n        con = duckdb.connect(db_path)\n        try:\n            n = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]\n            assert n == len(df)\n    \n            cols = [r[1] for r in con.execute(f"PRAGMA table_info('{table}')").fetchall()]\n            for c in ["Country","Business","Metric","PeriodType","Period","PeriodKey","Value","SourceBlockID","QualityFlag","Notes"]:\n>               assert c in cols\nE               AssertionError: assert 'Business' in ['Country', 'Week', 'Metric', 'Value']\n\ntests/test_duckdb_io.py:40: AssertionError\n_____________________________ test_duckdb_ytd_sum ______________________________\n\ntmp_path = PosixPath('/private/var/folders/dt/qxf_5c9s6jg526y6wt5jx7sc0000gn/T/pytest-of-michalvajcik/pytest-1/test_duckdb_ytd_sum0')\n\n    def test_duckdb_ytd_sum(tmp_path):\n        # 1) priprav blok s dvoma týždňami\n        block = {\n            "cells": [\n                {"row": 1, "col": 1, "value": "Turnover_EUR"},\n                {"row": 1, "col": 2, "value": "100"},  # W1\n                {"row": 1, "col": 3, "value": "200"},  # W2\n            ],\n            "headers": {\n                "static": {"Metric": 1},\n                "weeks": [\n                    {"col": 2, "label": "W1"},\n                    {"col": 3, "label": "W2"},\n                ],\n            },\n            "meta": {\n                "country_hint": "SK",\n                "business_hint": "WR",\n            "
+  ruff:
+    ok: true
+    code: 0
+    out: "ruff 0.14.0"
+  flake8:
+    ok: false
+    code: null
+    out: "command not found"
+recommendations:
+  - "Add CI in .github/workflows if missing"
+  - "Ensure tests/ contains at least smoke tests"
+  - "Add pre-commit with ruff/flake8 and pytest"
+  - "Document run steps in README"

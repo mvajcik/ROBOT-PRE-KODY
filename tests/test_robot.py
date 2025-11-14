@@ -1,20 +1,24 @@
 # tests/test_robot.py
 from pathlib import Path
+
 from openpyxl import Workbook
+
 from src.osm_robot.robot import read_excel_region
+
 
 def _make_tmp_excel(tmp_path: Path) -> str:
     """Vytvorí malý Excel s číslami, textom a vzorcom."""
     wb = Workbook()
     ws = wb.active
     ws.title = "AT_YTD"
-    ws["B2"] = "Hello"        # text
-    ws["C2"] = 1234           # number
-    ws["D2"] = "=C2*2"        # formula
-    ws["E2"] = None           # blank
+    ws["B2"] = "Hello"  # text
+    ws["C2"] = 1234  # number
+    ws["D2"] = "=C2*2"  # formula
+    ws["E2"] = None  # blank
     path = tmp_path / "mini.xlsx"
     wb.save(path)
     return str(path)
+
 
 def test_read_excel_region(tmp_path: Path):
     xlsx = _make_tmp_excel(tmp_path)

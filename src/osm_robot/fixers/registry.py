@@ -1,12 +1,16 @@
+# ruff: noqa: E501
 # src/osm_robot/fixers/registry.py
-from pathlib import Path
 import csv
 import re
+from pathlib import Path
+
 
 def _noop():
     return False
 
+
 # ------------------------ Fallback: oprav už vytvorený scan.csv ------------------------
+
 
 def _value_from_formula_if_empty_impl() -> bool:
     """
@@ -47,7 +51,9 @@ def _value_from_formula_if_empty_impl() -> bool:
 
     return False
 
+
 # ------------------------ PATCH priamo v src/scanner.py (idempotentný) ------------------------
+
 
 def _patch_fill_value_from_formula_impl() -> bool:
     """
@@ -89,6 +95,7 @@ def _patch_fill_value_from_formula_impl() -> bool:
         r"writer\.writerow\(\s*\[(?P<prefix>.*?)(?P<val>\bvalue\b)\s*,\s*(?P<form>\bformula\b)(?P<suffix>.*?\])\s*\)",
         re.DOTALL,
     )
+
     def _repl_direct(m):
         return (
             "writer.writerow(["
@@ -98,6 +105,7 @@ def _patch_fill_value_from_formula_impl() -> bool:
             + m.group("suffix")
             + ")"
         )
+
     if pat_writer_direct.search(src):
         src = pat_writer_direct.sub(_repl_direct, src, count=1)
         changed = True
@@ -107,6 +115,7 @@ def _patch_fill_value_from_formula_impl() -> bool:
         r"\brow\s*=\s*\[(?P<prefix>.*?)(?P<val>\bvalue\b)\s*,\s*(?P<form>\bformula\b)(?P<suffix>.*?\])",
         re.DOTALL,
     )
+
     def _repl_row(m):
         return (
             "row = ["
@@ -115,6 +124,7 @@ def _patch_fill_value_from_formula_impl() -> bool:
             + m.group("form")
             + m.group("suffix")
         )
+
     if pat_row_def.search(src):
         src = pat_row_def.sub(_repl_row, src, count=1)
         changed = True
@@ -124,7 +134,9 @@ def _patch_fill_value_from_formula_impl() -> bool:
 
     return changed
 
+
 # ------------------------ (voliteľné) Monkey-patch – nechávame registrované ------------------------
+
 
 def _monkeypatch_scan_block_value_from_formula_impl() -> bool:
     """
@@ -136,16 +148,18 @@ def _monkeypatch_scan_block_value_from_formula_impl() -> bool:
         return False
     return False  # nič nerobíme
 
+
 # ------------------------ Registrácia fixerov ------------------------
 
 _FIXERS = {
-    "normalize_month_names": _noop,                         # placeholder
-    "trim_header_spaces": _noop,                            # placeholder
-    "fix_bih_date_parsing": _noop,                          # placeholder
+    "normalize_month_names": _noop,  # placeholder
+    "trim_header_spaces": _noop,  # placeholder
+    "fix_bih_date_parsing": _noop,  # placeholder
     "value_from_formula_if_empty": _value_from_formula_if_empty_impl,
     "patch_fill_value_from_formula": _patch_fill_value_from_formula_impl,
     "monkeypatch_scan_block_value_from_formula": _monkeypatch_scan_block_value_from_formula_impl,
 }
+
 
 def get_fixer(key: str):
     return _FIXERS.get(key)

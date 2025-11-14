@@ -1,14 +1,17 @@
 # tests/test_scan_cli.py
-from pathlib import Path
 import csv
+from pathlib import Path
+
 from src.scanner import scan_block
 
 FIXT = Path("tests/fixtures")
 GOLD = Path("tests/golden")
 
+
 def read_csv(path: Path):
     with path.open(newline="", encoding="utf-8") as f:
         return list(csv.reader(f))
+
 
 def test_scan_block_csv(tmp_path):
     # vstup

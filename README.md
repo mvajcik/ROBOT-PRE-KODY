@@ -28,7 +28,7 @@ Helper robot for finance controllers – automating Excel → DuckDB → Excel p
 
 ## Data contract (čo garantujú testy)
 - **Scanner**: rozpozná blok, typy buniek (text/číslo/vzorec/None).
-- **Transform**: jednotný stĺpcový formát  
+- **Transform**: jednotný stĺpcový formát
   `Country, Business, Metric, PeriodType, Period, Value, SourceBlockID, QualityFlag, Notes, PeriodKey`.
 - **Normalizácia**: `WEEK / MONTH / QUARTER / HALF` → `PeriodKey` je ISO-friendly.
 - **DuckDB IO**: SELECT funguje nad dlhým tvarom (testy `test_duckdb_*`).
@@ -50,4 +50,4 @@ Helper robot for finance controllers – automating Excel → DuckDB → Excel p
 - [ ] Stock report generátor (nad DuckDB; zdieľané metriky)
 - [ ] Rozšírené kontroly konzistencie (Daily vs Weekly vs Inventory)
 - [ ] CLI príkaz `robot export --template ...`
-- [ ] Pre-cleaning “country adapters” (názvy hárkov, posuny hlavičiek) 
+- [ ] Pre-cleaning “country adapters” (názvy hárkov, posuny hlavičiek)

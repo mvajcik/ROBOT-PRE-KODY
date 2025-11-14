@@ -8,27 +8,32 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path('src').resolve()))
-sys.path.insert(0, str(Path('.').resolve()))
+
+sys.path.insert(0, str(Path("src").resolve()))
+sys.path.insert(0, str(Path(".").resolve()))
+import importlib
+import shlex
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
 import yaml
-import importlib
-import time
-import shlex
+
 
 def run_pytest_and_get_report(tests_path: str, pytest_args: str = "") -> Path:
     tmp = tempfile.NamedTemporaryFile(prefix="junit_", suffix=".xml", delete=False)
-    tmp_path = Path(tmp.name); tmp.close()
+    tmp_path = Path(tmp.name)
+    tmp.close()
     cmd = ["pytest", "-q", tests_path]
     if pytest_args:
-        cmd += shlex.split(pytest_args)   # správne rozparsuje '-k "not test_autorun_fail"'
+        cmd += shlex.split(pytest_args)  # správne rozparsuje '-k "not test_autorun_fail"'
     cmd += [f"--junitxml={tmp_path}"]
     print(f"[robot] pytest: {' '.join(cmd)}")
     rc = subprocess.call(cmd)
     print(f"[robot] pytest return code: {rc}")
     return tmp_path
+
 
 def parse_failures(junit_xml_path: Path):
     """Vráti list slovníkov s info o failoch: test_name, message, text."""
@@ -38,12 +43,15 @@ def parse_failures(junit_xml_path: Path):
     # JUnit schema: <testsuite><testcase><failure message=..>text</failure></testcase>...
     for tc in root.iter("testcase"):
         for failure in tc.findall("failure"):
-            failures.append({
-                "test_name": f"{tc.get('classname','')}.{tc.get('name','')}",
-                "message": failure.get("message","").strip(),
-                "text": (failure.text or "").strip()
-            })
+            failures.append(
+                {
+                    "test_name": f"{tc.get('classname', '')}.{tc.get('name', '')}",
+                    "message": failure.get("message", "").strip(),
+                    "text": (failure.text or "").strip(),
+                }
+            )
     return failures
+
 
 def load_whitelist(whitelist_path: str) -> dict:
     with open(whitelist_path, "r", encoding="utf-8") as f:
@@ -54,12 +62,13 @@ def load_whitelist(whitelist_path: str) -> dict:
     #   - key: trim_header_spaces
     return {fix["key"] for fix in data.get("fixes", []) if "key" in fix}
 
+
 def map_fail_to_fix_keys(failure: dict) -> list[str]:
     """
     Heuristika: mapuje text chýb na kľúče fixov.
     Pridávaj ďalšie pravidlá podľa potrieb testov (ideálne s tagom [AUTO] v správe).
     """
-    msg = f"{failure.get('message','')} {failure.get('text','')}".lower()
+    msg = f"{failure.get('message', '')} {failure.get('text', '')}".lower()
 
     keys: list[str] = []
 
@@ -94,6 +103,7 @@ def map_fail_to_fix_keys(failure: dict) -> list[str]:
     seen = set()
     return [k for k in keys if not (k in seen or seen.add(k))]
 
+
 def apply_fix(fix_key: str) -> bool:
     """
     Zavolá implementáciu fixu z registry.
@@ -103,12 +113,12 @@ def apply_fix(fix_key: str) -> bool:
     try:
         registry = importlib.import_module("osm_robot.fixers.registry")
     except ModuleNotFoundError:
-        print(f"[robot] registry modul nenájdený (osm_robot.fixers.registry). Preskakujem.")
+        print("[robot] registry modul nenájdený (osm_robot.fixers.registry). Preskakujem.")
         return False
 
     get_fixer = getattr(registry, "get_fixer", None)
     if not callable(get_fixer):
-        print(f"[robot] registry.get_fixer() chýba. Preskakujem.")
+        print("[robot] registry.get_fixer() chýba. Preskakujem.")
         return False
 
     fixer = get_fixer(fix_key)
@@ -125,13 +135,20 @@ def apply_fix(fix_key: str) -> bool:
         print(f"[robot] Fix '{fix_key}' zlyhal: {e}")
         return False
 
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tests", default="tests", help="Cesta k testom (dir alebo pattern)")
     ap.add_argument("--whitelist", default="whitelist.yml", help="Whitelist povolených fixov")
     ap.add_argument("--max-iter", type=int, default=3, help="Max počet cyklov auto-loopu")
-    ap.add_argument("--sleep-sec", type=float, default=0.0, help="Pauza medzi iteráciami (ak treba)")
-    ap.add_argument("--pytest-args", default="", help="Dodatočné argumenty pre pytest (napr. -k 'not test_autorun_fail')")
+    ap.add_argument(
+        "--sleep-sec", type=float, default=0.0, help="Pauza medzi iteráciami (ak treba)"
+    )
+    ap.add_argument(
+        "--pytest-args",
+        default="",
+        help="Dodatočné argumenty pre pytest (napr. -k 'not test_autorun_fail')",
+    )
     args = ap.parse_args()
 
     allowed = load_whitelist(args.whitelist)
@@ -186,8 +203,12 @@ def main():
         if args.sleep_sec:
             time.sleep(args.sleep_sec)
 
-    print("[robot] ❌ Dosiahnutý limit iterácií bez zelenej. Skús pozrieť logy a rozšíriť fixy/whitelist.")
+    print(
+        "[robot] ❌ Dosiahnutý limit iterácií bez zelenej."
+        "Skús pozrieť logy a rozšíriť fixy/whitelist."
+    )
     sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
