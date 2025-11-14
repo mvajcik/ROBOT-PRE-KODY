@@ -11,9 +11,14 @@ def test_period_normalization_quarters_halves_with_year_hint():
         "headers": {
             "static": {"Metric": 1},
             "quarters": [{"col": 2, "label": "Q1"}],
-            "halves":   [{"col": 3, "label": "H2"}],
+            "halves": [{"col": 3, "label": "H2"}],
         },
-        "meta": {"country_hint": "SK", "business_hint": "WR", "block_id": "blk-qh-001", "year_hint": 2025},
+        "meta": {
+            "country_hint": "SK",
+            "business_hint": "WR",
+            "block_id": "blk-qh-001",
+            "year_hint": 2025,
+        },
         "fixes": {},
         "fallback_map": {},
     }

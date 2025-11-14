@@ -12,11 +12,16 @@ def test_transform_block_weeks_minimal():
             # Riadok 10: názov metriky
             {"row": 10, "col": 1, "value": "Turnover_EUR", "a1": "B11"},
             # Hodnoty týždňov pre ten istý riadok
-            {"row": 10, "col": 2, "value": "100", "a1": "C11"},   # W1 - numeric
-            {"row": 10, "col": 3, "value": "abc",  "a1": "D11"},  # W2 - non-numeric (má ísť do audit)
+            {"row": 10, "col": 2, "value": "100", "a1": "C11"},  # W1 - numeric
+            {
+                "row": 10,
+                "col": 3,
+                "value": "abc",
+                "a1": "D11",
+            },  # W2 - non-numeric (má ísť do audit)
         ],
         "headers": {
-            "static": {"Metric": 1},       # stĺpec s názvom metriky
+            "static": {"Metric": 1},  # stĺpec s názvom metriky
             "weeks": [
                 {"col": 2, "label": "W1"},
                 {"col": 3, "label": "W2"},
@@ -30,33 +35,45 @@ def test_transform_block_weeks_minimal():
     data, audit = transform_block(block)
 
     # --- Očakávané dáta ---
-    expected = pd.DataFrame([
-        {
-            "Country": "SK",
-            "Business": "WR",
-            "Metric": "Turnover_EUR",
-            "PeriodType": "WEEK",
-            "Period": "W1",
-            "Value": 100.0,
-            "SourceBlockID": "blk-001",
-            "QualityFlag": "OK",
-            "Notes": "",
-        },
-        {
-            "Country": "SK",
-            "Business": "WR",
-            "Metric": "Turnover_EUR",
-            "PeriodType": "WEEK",
-            "Period": "W2",
-            "Value": np.nan,               # non-numeric -> None/NaN
-            "SourceBlockID": "blk-001",
-            "QualityFlag": "MISSING",
-            "Notes": "non-numeric",
-        },
-    ])
+    expected = pd.DataFrame(
+        [
+            {
+                "Country": "SK",
+                "Business": "WR",
+                "Metric": "Turnover_EUR",
+                "PeriodType": "WEEK",
+                "Period": "W1",
+                "Value": 100.0,
+                "SourceBlockID": "blk-001",
+                "QualityFlag": "OK",
+                "Notes": "",
+            },
+            {
+                "Country": "SK",
+                "Business": "WR",
+                "Metric": "Turnover_EUR",
+                "PeriodType": "WEEK",
+                "Period": "W2",
+                "Value": np.nan,  # non-numeric -> None/NaN
+                "SourceBlockID": "blk-001",
+                "QualityFlag": "MISSING",
+                "Notes": "non-numeric",
+            },
+        ]
+    )
 
     # Pre porovnanie nastavíme jednotné poradie stĺpcov
-    cols = ["Country","Business","Metric","PeriodType","Period","Value","SourceBlockID","QualityFlag","Notes"]
+    cols = [
+        "Country",
+        "Business",
+        "Metric",
+        "PeriodType",
+        "Period",
+        "Value",
+        "SourceBlockID",
+        "QualityFlag",
+        "Notes",
+    ]
     data = data.reindex(columns=cols).sort_values(by=["Period"]).reset_index(drop=True)
     expected = expected.reindex(columns=cols).sort_values(by=["Period"]).reset_index(drop=True)
 
@@ -71,4 +88,3 @@ def test_transform_block_weeks_minimal():
     assert row["metric"] == "Turnover_EUR"
     assert row["period"] == "W2"
     assert "Non-numeric" in row["detail"]
-    

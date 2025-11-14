@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
-from transform import transform_block  # prispôsob ak má iný import
+
 import pandas as pd
+
+from transform import transform_block  # prispôsob ak má iný import
 
 
 def main():

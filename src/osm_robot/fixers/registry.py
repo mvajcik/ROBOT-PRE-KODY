@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 # src/osm_robot/fixers/registry.py
 import csv
 import re

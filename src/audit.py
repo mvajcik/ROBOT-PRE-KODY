@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 # src/audit.py
 from __future__ import annotations
 

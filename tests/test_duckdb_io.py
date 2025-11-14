@@ -17,8 +17,14 @@ def test_save_to_duckdb_creates_table_and_writes_rows(tmp_path):
             "static": {"Metric": 1},
             "weeks": [{"col": 2, "label": "W1"}, {"col": 3, "label": "W2"}],
         },
-        "meta": {"country_hint": "SK", "business_hint": "WR", "block_id": "blk-db-001", "year_hint": 2025},
-        "fixes": {}, "fallback_map": {},
+        "meta": {
+            "country_hint": "SK",
+            "business_hint": "WR",
+            "block_id": "blk-db-001",
+            "year_hint": 2025,
+        },
+        "fixes": {},
+        "fallback_map": {},
     }
     df, audit = transform_block(block)
     assert audit.empty
@@ -36,7 +42,18 @@ def test_save_to_duckdb_creates_table_and_writes_rows(tmp_path):
         assert n == len(df)
 
         cols = [r[1] for r in con.execute(f"PRAGMA table_info('{table}')").fetchall()]
-        for c in ["Country","Business","Metric","PeriodType","Period","PeriodKey","Value","SourceBlockID","QualityFlag","Notes"]:
+        for c in [
+            "Country",
+            "Business",
+            "Metric",
+            "PeriodType",
+            "Period",
+            "PeriodKey",
+            "Value",
+            "SourceBlockID",
+            "QualityFlag",
+            "Notes",
+        ]:
             assert c in cols
     finally:
         con.close()

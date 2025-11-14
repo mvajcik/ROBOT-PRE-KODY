@@ -1,84 +1,33 @@
-# OSM_PATCH: scan_block value<-formula
+# sitecustomize: OSM scanner patches
+# Tento modul sa načíta automaticky, ak je na sys.path.
+
+from __future__ import annotations
+
+import builtins
 import csv
-
-try:
-    import osm_robot.robot as _osm_robot_robot
-except Exception:
-    _osm_robot_robot = None
-
-
-def _osm__ensure_value_filled(value, formula):
-    return formula if (value is None or str(value) == "") and (formula not in (None, "")) else value
-
-
-def _osm__postprocess_csv(out_csv_path):
-    try:
-        rows = []
-        with open(out_csv_path, "r", encoding="utf-8", newline="") as f:
-            rows = list(csv.reader(f))
-        if not rows:
-            return
-        header = rows[0]
-        if not all(h in header for h in ("sheet", "row", "col", "value", "formula")):
-            return
-        vi, fi = header.index("value"), header.index("formula")
-        changed = False
-        for i in range(1, len(rows)):
-            r = rows[i]
-            if len(r) <= max(vi, fi):
-                continue
-            if (r[vi] == "" or r[vi] is None) and r[fi]:
-                r[vi] = r[fi]
-                changed = True
-        if changed:
-            with open(out_csv_path, "w", encoding="utf-8", newline="") as f:
-                csv.writer(f).writerows(rows)
-    except Exception:
-        pass
-
-
-def _osm__wrap_scan_block():
-    if _osm_robot_robot is None:
-        return
-    orig = getattr(_osm_robot_robot, "scan_block", None)
-    if getattr(_osm_robot_robot, "_OSM_SCAN_BLOCK_PATCHED", False):
-        return
-    if callable(orig):
-
-        def wrapped(xlsx_path, sheet, rng, out_csv_path, *a, **kw):
-            res = orig(xlsx_path, sheet, rng, out_csv_path, *a, **kw)
-            try:
-                _osm__postprocess_csv(out_csv_path)
-            finally:
-                return res
-
-        _osm_robot_robot.scan_block = wrapped
-        _osm_robot_robot._OSM_SCAN_BLOCK_PATCHED = True
-
-
-_osm__wrap_scan_block()
-
-
-# OSM_PATCH: scan_block value<-formula (scanner)
 import importlib
+import sys
+from pathlib import Path
+from typing import Any
 
 
-def _osm__ensure_value_filled(value, formula):
-    return formula if (value is None or str(value) == "") and (formula not in (None, "")) else value
-
-
-def _osm__postprocess_csv(out_csv_path):
+def _osm__postprocess_csv(out_csv_path: str) -> None:
+    """Fill missing 'value' from 'formula' in scanner CSV output."""
     try:
-        rows = []
         with open(out_csv_path, "r", encoding="utf-8", newline="") as f:
             rows = list(csv.reader(f))
+
         if not rows:
             return
+
         header = rows[0]
         if not all(h in header for h in ("sheet", "row", "col", "value", "formula")):
             return
-        vi, fi = header.index("value"), header.index("formula")
+
+        vi = header.index("value")
+        fi = header.index("formula")
         changed = False
+
         for i in range(1, len(rows)):
             r = rows[i]
             if len(r) <= max(vi, fi):
@@ -86,6 +35,7 @@ def _osm__postprocess_csv(out_csv_path):
             if (r[vi] == "" or r[vi] is None) and r[fi]:
                 r[vi] = r[fi]
                 changed = True
+
         if changed:
             with open(out_csv_path, "w", encoding="utf-8", newline="") as f:
                 csv.writer(f).writerows(rows)
@@ -94,114 +44,108 @@ def _osm__postprocess_csv(out_csv_path):
         pass
 
 
-def _osm__wrap_scan_block():
-    mod = None
+# -----------------------------------------------------------------------------
+# 1) Priamy patch na osm_robot.robot.scan_block
+# -----------------------------------------------------------------------------
+
+
+def _patch_osm_robot_scan_block() -> None:
+    try:
+        import osm_robot.robot as osm_robot_robot  # type: ignore[import]
+    except Exception:
+        return
+
+    if getattr(osm_robot_robot, "_OSM_SCAN_BLOCK_PATCHED", False):
+        return
+
+    orig = getattr(osm_robot_robot, "scan_block", None)
+    if not callable(orig):
+        return
+
+    def wrapped(xlsx_path: str, sheet: str, rng: str, out_csv_path: str, *a: Any, **kw: Any) -> Any:
+        res = orig(xlsx_path, sheet, rng, out_csv_path, *a, **kw)
+        try:
+            _osm__postprocess_csv(out_csv_path)
+        finally:
+            return res
+
+    osm_robot_robot.scan_block = wrapped  # type: ignore[attr-defined]
+    osm_robot_robot._OSM_SCAN_BLOCK_PATCHED = True  # type: ignore[attr-defined]
+
+
+# -----------------------------------------------------------------------------
+# 2) Spoločný wrapper pre moduly so scan_block (scanner, osm_robot.scanner)
+# -----------------------------------------------------------------------------
+
+
+def _wrap_scan_block_on_module(mod: Any) -> None:
+    if getattr(mod, "_OSM_SCAN_BLOCK_PATCHED", False):
+        return
+
+    orig = getattr(mod, "scan_block", None)
+    if not callable(orig):
+        return
+
+    def wrapped(xlsx_path: str, sheet: str, rng: str, out_csv_path: str, *a: Any, **kw: Any) -> Any:
+        res = orig(xlsx_path, sheet, rng, out_csv_path, *a, **kw)
+        try:
+            _osm__postprocess_csv(out_csv_path)
+        finally:
+            return res
+
+    mod.scan_block = wrapped  # type: ignore[attr-defined]
+    mod._OSM_SCAN_BLOCK_PATCHED = True  # type: ignore[attr-defined]
+
+
+def _patch_scanner_modules() -> None:
+    """Skús hneď patchnúť scanner moduly, ak sú importovateľné."""
     for name in ("scanner", "osm_robot.scanner"):
         try:
             mod = importlib.import_module(name)
-            break
         except Exception:
             continue
-    if mod is None:
-        return
-    if getattr(mod, "_OSM_SCAN_BLOCK_PATCHED", False):
-        return
-    orig = getattr(mod, "scan_block", None)
-    if callable(orig):
-
-        def wrapped(xlsx_path, sheet, rng, out_csv_path, *a, **kw):
-            res = orig(xlsx_path, sheet, rng, out_csv_path, *a, **kw)
-            try:
-                _osm__postprocess_csv(out_csv_path)
-            finally:
-                return res
-
-        mod.scan_block = wrapped
-        mod._OSM_SCAN_BLOCK_PATCHED = True
+        _wrap_scan_block_on_module(mod)
 
 
-_osm__wrap_scan_block()
+# -----------------------------------------------------------------------------
+# 3) sys.path + import hook pre neskoršie importy scanneru
+# -----------------------------------------------------------------------------
 
 
-# OSM_PATCH2: scan_block value<-formula (scanner, sys.path+importhook)
-import builtins
-import sys
-from pathlib import Path
-
-# 1) Uisti sa, že 'src' je na sys.path (projekt má src-layout)
-src_path = str(Path("src").resolve())
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
+def _ensure_src_on_path() -> None:
+    """Pridaj src/ na sys.path (src-layout projektu)."""
+    src_path = str(Path("src").resolve())
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
 
 
-def _osm__ensure_value_filled(value, formula):
-    return formula if (value is None or str(value) == "") and (formula not in (None, "")) else value
-
-
-def _osm__postprocess_csv(out_csv_path):
-    try:
-        rows = []
-        with open(out_csv_path, "r", encoding="utf-8", newline="") as f:
-            rows = list(csv.reader(f))
-        if not rows:
-            return
-        header = rows[0]
-        if not all(h in header for h in ("sheet", "row", "col", "value", "formula")):
-            return
-        vi, fi = header.index("value"), header.index("formula")
-        changed = False
-        for i in range(1, len(rows)):
-            r = rows[i]
-            if len(r) <= max(vi, fi):
-                continue
-            if (r[vi] == "" or r[vi] is None) and r[fi]:
-                r[vi] = r[fi]
-                changed = True
-        if changed:
-            with open(out_csv_path, "w", encoding="utf-8", newline="") as f:
-                csv.writer(f).writerows(rows)
-    except Exception:
-        pass
-
-
-def _osm__wrap_scan_block_on_module(mod):
-    if getattr(mod, "_OSM_SCAN_BLOCK_PATCHED", False):
-        return
-    orig = getattr(mod, "scan_block", None)
-    if callable(orig):
-
-        def wrapped(xlsx_path, sheet, rng, out_csv_path, *a, **kw):
-            res = orig(xlsx_path, sheet, rng, out_csv_path, *a, **kw)
-            try:
-                _osm__postprocess_csv(out_csv_path)
-            finally:
-                return res
-
-        mod.scan_block = wrapped
-        mod._OSM_SCAN_BLOCK_PATCHED = True
-
-
-# 2) Skús hneď patchnúť, ak je scanner importovateľný
-try:
-    mod = importlib.import_module("scanner")
-    _osm__wrap_scan_block_on_module(mod)
-except Exception:
-    pass  # nič, vyrieši import-hook
-
-# 3) Import-hook: ak sa 'scanner' importuje neskôr, patchni ho po importe
 _old_import = builtins.__import__
 
 
-def _osm__import_hook(name, *a, **kw):
+def _osm__import_hook(name: str, *a: Any, **kw: Any):
     mod = _old_import(name, *a, **kw)
     try:
         if name == "scanner" or name.endswith(".scanner"):
-            _osm__wrap_scan_block_on_module(mod)
+            _wrap_scan_block_on_module(mod)
     except Exception:
+        # hook nesmie zhodiť beh
         pass
     return mod
 
 
-if not getattr(builtins, "_OSM_IMPORT_HOOK_INSTALLED", False):
-    builtins.__import__ = _osm__import_hook
-    builtins._OSM_IMPORT_HOOK_INSTALLED = True
+def _install_import_hook() -> None:
+    if getattr(builtins, "_OSM_IMPORT_HOOK_INSTALLED", False):
+        return
+    builtins.__import__ = _osm__import_hook  # type: ignore[assignment]
+    builtins._OSM_IMPORT_HOOK_INSTALLED = True  # type: ignore[attr-defined]
+
+
+# -----------------------------------------------------------------------------
+# Spusti patche pri importe sitecustomize
+# -----------------------------------------------------------------------------
+
+
+_patch_osm_robot_scan_block()
+_ensure_src_on_path()
+_patch_scanner_modules()
+_install_import_hook()

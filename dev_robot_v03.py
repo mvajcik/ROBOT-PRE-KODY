@@ -45,7 +45,7 @@ def parse_failures(junit_xml_path: Path):
         for failure in tc.findall("failure"):
             failures.append(
                 {
-                    "test_name": f"{tc.get('classname','')}.{tc.get('name','')}",
+                    "test_name": f"{tc.get('classname', '')}.{tc.get('name', '')}",
                     "message": failure.get("message", "").strip(),
                     "text": (failure.text or "").strip(),
                 }
@@ -68,7 +68,7 @@ def map_fail_to_fix_keys(failure: dict) -> list[str]:
     Heuristika: mapuje text chýb na kľúče fixov.
     Pridávaj ďalšie pravidlá podľa potrieb testov (ideálne s tagom [AUTO] v správe).
     """
-    msg = f"{failure.get('message','')} {failure.get('text','')}".lower()
+    msg = f"{failure.get('message', '')} {failure.get('text', '')}".lower()
 
     keys: list[str] = []
 
@@ -204,7 +204,8 @@ def main():
             time.sleep(args.sleep_sec)
 
     print(
-        "[robot] ❌ Dosiahnutý limit iterácií bez zelenej. Skús pozrieť logy a rozšíriť fixy/whitelist."
+        "[robot] ❌ Dosiahnutý limit iterácií bez zelenej."
+        "Skús pozrieť logy a rozšíriť fixy/whitelist."
     )
     sys.exit(1)
 

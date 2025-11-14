@@ -68,4 +68,3 @@ Výhoda: vždy rovnaké prostredie, žiadne kopírovanie súborov.
 	•	Black + pytest + CI ti garantujú stabilitu,
 	•	ChatGPT + Copilot ti výrazne skracujú čas,
 	•	Vývoj je rozdelený na malé, bezpečné kroky.
-

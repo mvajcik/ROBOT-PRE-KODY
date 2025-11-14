@@ -106,7 +106,7 @@ def detect_block(path: str, sheet: str, a1_range: str) -> Dict[str, Any]:
 
     return {
         "sheet": sheet,
-        "anchor": f"{_idx_to_col(c1+1)}{r1+1}",
+        "anchor": f"{_idx_to_col(c1 + 1)}{r1 + 1}",
         "layout": layout,
         "rows_by": "metric",
         "row_map": row_labels,

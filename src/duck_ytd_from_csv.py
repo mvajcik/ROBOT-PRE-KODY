@@ -1,6 +1,7 @@
 # src/duck_ytd_from_csv.py
 import argparse
 from pathlib import Path
+
 import duckdb  # pip install duckdb
 
 
@@ -91,8 +92,8 @@ def main():
     con.execute(f"COPY ytd_by_week TO '{out_dir / 'ytd_by_week.csv'}' (HEADER, DELIMITER ',')")
     con.execute(f"COPY ytd_total   TO '{out_dir / 'ytd_total.csv'}' (HEADER, DELIMITER ',')")
     print(f"✔ Loaded into: {db_path}")
-    print(f"✔ Exported:    {out_dir/'ytd_by_week.csv'}")
-    print(f"✔ Exported:    {out_dir/'ytd_total.csv'}")
+    print(f"✔ Exported:    {out_dir / 'ytd_by_week.csv'}")
+    print(f"✔ Exported:    {out_dir / 'ytd_total.csv'}")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,6 @@
-import os, sys, json, subprocess, time
+import json
+import subprocess
+import time
 from pathlib import Path
 
 root = Path.cwd()
@@ -138,7 +140,12 @@ print(f"Dirs: {', '.join(present_dirs) or '-'}")
 print(f"Files: {', '.join(present_files) or '-'}")
 print(f"Python files: {len(all_py)} | lines: {total_lines}")
 print(f"Tests: {len(tests_py)} | CI workflows: {len(workflows)}")
-print(
-    f"Pytest ok: {summary['health_checks']['pytest']['ok']} | Ruff: {summary['health_checks']['ruff']['ok']} | Flake8: {summary['health_checks']['flake8']['ok']}"
+
+status_line = (
+    f"Pytest ok: {summary['health_checks']['pytest']['ok']} | "
+    f"Ruff: {summary['health_checks']['ruff']['ok']} | "
+    f"Flake8: {summary['health_checks']['flake8']['ok']}"
 )
+print(status_line)
+
 print(f"Written: {out_path}")

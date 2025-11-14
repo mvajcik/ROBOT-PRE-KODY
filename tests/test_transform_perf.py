@@ -15,15 +15,17 @@ def make_block(num_metrics=30, weeks=52):
     cells = []
     headers = {
         "static": {"Metric": 1},  # stĺpec 1 = názov metriky
-        "weeks": [{"col": c, "label": f"W{c-1}"} for c in range(2, 2 + weeks)],  # col=2..53 -> W1..W52
+        "weeks": [
+            {"col": c, "label": f"W{c - 1}"} for c in range(2, 2 + weeks)
+        ],  # col=2..53 -> W1..W52
     }
     meta = {"country_hint": "SK", "business_hint": "WR", "block_id": "blk-perf"}
 
     # Každá metrika na novom riadku
     for i in range(num_metrics):
         row = 10 + i  # ľubovoľné číslo riadku
-        metric_name = f"Metric_{i+1}"
-        cells.append({"row": row, "col": 1, "value": metric_name, "a1": f"B{row+1}"})
+        metric_name = f"Metric_{i + 1}"
+        cells.append({"row": row, "col": 1, "value": metric_name, "a1": f"B{row + 1}"})
 
         for w_idx, week in enumerate(headers["weeks"], start=1):
             col = week["col"]
@@ -42,6 +44,7 @@ def make_block(num_metrics=30, weeks=52):
         "fixes": {},
         "fallback_map": {},
     }
+
 
 def test_transform_block_perf_medium():
     block = make_block(num_metrics=30, weeks=52)

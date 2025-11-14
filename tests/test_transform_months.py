@@ -10,8 +10,8 @@ def test_transform_block_months_minimal():
     block = {
         "cells": [
             {"row": 5, "col": 1, "value": "Turnover_EUR", "a1": "B6"},  # stĺpec 1 = Metric
-            {"row": 5, "col": 2, "value": "200",           "a1": "C6"},  # Jan
-            {"row": 5, "col": 3, "value": "x",             "a1": "D6"},  # Feb (chybné)
+            {"row": 5, "col": 2, "value": "200", "a1": "C6"},  # Jan
+            {"row": 5, "col": 3, "value": "x", "a1": "D6"},  # Feb (chybné)
         ],
         "headers": {
             "static": {"Metric": 1},
@@ -28,31 +28,43 @@ def test_transform_block_months_minimal():
     data, audit = transform_block(block)
 
     # Očakávané 2 riadky: Jan=200.0 OK, Feb=MISSING
-    expected = pd.DataFrame([
-        {
-            "Country": "SK",
-            "Business": "WR",
-            "Metric": "Turnover_EUR",
-            "PeriodType": "MONTH",
-            "Period": "Jan",
-            "Value": 200.0,
-            "SourceBlockID": "blk-m-001",
-            "QualityFlag": "OK",
-            "Notes": "",
-        },
-        {
-            "Country": "SK",
-            "Business": "WR",
-            "Metric": "Turnover_EUR",
-            "PeriodType": "MONTH",
-            "Period": "Feb",
-            "Value": np.nan,
-            "SourceBlockID": "blk-m-001",
-            "QualityFlag": "MISSING",
-            "Notes": "non-numeric",
-        },
-    ])
-    cols = ["Country","Business","Metric","PeriodType","Period","Value","SourceBlockID","QualityFlag","Notes"]
+    expected = pd.DataFrame(
+        [
+            {
+                "Country": "SK",
+                "Business": "WR",
+                "Metric": "Turnover_EUR",
+                "PeriodType": "MONTH",
+                "Period": "Jan",
+                "Value": 200.0,
+                "SourceBlockID": "blk-m-001",
+                "QualityFlag": "OK",
+                "Notes": "",
+            },
+            {
+                "Country": "SK",
+                "Business": "WR",
+                "Metric": "Turnover_EUR",
+                "PeriodType": "MONTH",
+                "Period": "Feb",
+                "Value": np.nan,
+                "SourceBlockID": "blk-m-001",
+                "QualityFlag": "MISSING",
+                "Notes": "non-numeric",
+            },
+        ]
+    )
+    cols = [
+        "Country",
+        "Business",
+        "Metric",
+        "PeriodType",
+        "Period",
+        "Value",
+        "SourceBlockID",
+        "QualityFlag",
+        "Notes",
+    ]
     data = data.reindex(columns=cols).sort_values(by=["Period"]).reset_index(drop=True)
     expected = expected.reindex(columns=cols).sort_values(by=["Period"]).reset_index(drop=True)
 

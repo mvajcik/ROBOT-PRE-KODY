@@ -48,4 +48,3 @@ jobs:
       - name: Run tests (full)
         env: { PYTHONPATH: src }
         run: pytest -q -k "not test_autorun_fail"
-

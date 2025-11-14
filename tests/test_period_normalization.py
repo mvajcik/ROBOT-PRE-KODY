@@ -15,7 +15,12 @@ def test_period_normalization_months_with_year_hint():
                 {"col": 3, "label": "Feb"},
             ],
         },
-        "meta": {"country_hint": "SK", "business_hint": "WR", "block_id": "blk-m-002", "year_hint": 2025},
+        "meta": {
+            "country_hint": "SK",
+            "business_hint": "WR",
+            "block_id": "blk-m-002",
+            "year_hint": 2025,
+        },
         "fixes": {},
         "fallback_map": {},
     }

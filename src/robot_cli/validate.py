@@ -21,9 +21,13 @@ def _schema_for(df: pd.DataFrame) -> pa.DataFrameSchema:
 
     schema_cols: dict[str, pa.Column] = {}
     if "row" in cols:
-        schema_cols[cols["row"]] = pa.Column(int, checks=pa.Check.ge(1), nullable=False, coerce=True)
+        schema_cols[cols["row"]] = pa.Column(
+            int, checks=pa.Check.ge(1), nullable=False, coerce=True
+        )
     if "col" in cols:
-        schema_cols[cols["col"]] = pa.Column(int, checks=pa.Check.ge(1), nullable=False, coerce=True)
+        schema_cols[cols["col"]] = pa.Column(
+            int, checks=pa.Check.ge(1), nullable=False, coerce=True
+        )
     if "address" in cols:
         schema_cols[cols["address"]] = pa.Column(str, nullable=False, coerce=True)
     if "value" in cols:

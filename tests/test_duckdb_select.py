@@ -39,12 +39,14 @@ def test_duckdb_ytd_sum(tmp_path):
     # 3) SELECT – YTD SUM
     con = duckdb.connect(db_path)
     try:
-        result = con.execute("""
+        result = con.execute(
+            """
             SELECT Metric, SUM(Value) AS YTD
             FROM fact_metrics
             WHERE Country = 'SK' AND Business = 'WR'
             GROUP BY Metric
-        """).fetchdf()
+        """
+        ).fetchdf()
     finally:
         con.close()
 

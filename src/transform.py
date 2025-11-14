@@ -125,13 +125,10 @@ def _normalize_period(period_type: str, label: str, year_hint=None) -> str | Non
 
 
 def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
-    import pandas as pd  # (ak už nie je hore)
+    import pandas as pd  # istota, že pd existuje v tejto funkcii
 
-    # ---- SAFETY: ak príde prázdny vstup, vráť kontrakt so správnymi dtypes ----
-    # ak je vstup DataFrame, voláme ho raw_df; ak je to iný typ (napr. dict z nášho skeneru), nechaj raw_df=None
-    raw_df = block if isinstance(block, pd.DataFrame) else None
-
-    if raw_df is None or (hasattr(raw_df, "empty") and raw_df.empty):
+    # ---- SAFETY A: legacy podpora – ak príde DataFrame, vráť contract-min ----
+    if isinstance(block, pd.DataFrame):
         out_df = pd.DataFrame(
             {
                 "Country": pd.Series(dtype="string"),
@@ -143,21 +140,40 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
         audit = pd.DataFrame(columns=["level", "message"])
         return out_df, audit
 
-    # ---------------------------------------------------------------------------
+    # ---- SAFETY B: očakávame dict blok zo skenera ----
+    def _empty_contract_df() -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "Country": pd.Series(dtype="string"),
+                "Business": pd.Series(dtype="string"),
+                "Metric": pd.Series(dtype="string"),
+                "PeriodType": pd.Series(dtype="string"),
+                "Period": pd.Series(dtype="string"),
+                "PeriodKey": pd.Series(dtype="string"),
+                "Value": pd.Series(dtype="float64"),
+                "SourceBlockID": pd.Series(dtype="string"),
+                "QualityFlag": pd.Series(dtype="string"),
+                "Notes": pd.Series(dtype="string"),
+            }
+        )
 
-    """
-    Transformuje naskenovaný Excel blok do normalizovaného formátu.
-    v2: okrem týždňov (WEEK) podporuje aj MONTH / QUARTER / HALF, ak sú v headers.
+    if not isinstance(block, dict):
+        audit = pd.DataFrame(columns=["level", "message"])
+        return _empty_contract_df(), audit
 
-    Očakávané štruktúry v block["headers"]:
-      - "static": {"Metric": <col_idx>}
-      - "weeks":   [{"col": <int>, "label": "W1"}, ...]                (voliteľné)
-      - "months":  [{"col": <int>, "label": "Jan"|"2025-01"}, ...]     (voliteľné)
-      - "quarters":[{"col": <int>, "label": "Q1"|"2025-Q1"}, ...]      (voliteľné)
-      - "halves":  [{"col": <int>, "label": "H1"|"2025-H1"}, ...]      (voliteľné)
-    """
-    rows = []
-    audit_rows = []
+    # prázdny / divný blok -> vráť len kontrakt
+    cells = block.get("cells") or []
+    headers = block.get("headers") or {}
+    if not cells or not headers:
+        audit = pd.DataFrame(columns=["level", "message"])
+        return _empty_contract_df(), audit
+
+    # -----------------------------------------------------------------------
+    # Transformuje naskenovaný Excel blok do normalizovaného formátu.
+    # Podporuje WEEK / MONTH / QUARTER / HALF podľa toho, čo je v headers.
+    # -----------------------------------------------------------------------
+    rows: list[dict] = []
+    audit_rows: list[dict] = []
 
     # --- Meta
     meta = block.get("meta", {}) or {}
@@ -166,11 +182,9 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     block_id = meta.get("block_id", "NA")
 
     # --- Headers
-    headers = block.get("headers", {}) or {}
     metrics_col = (headers.get("static") or {}).get("Metric")
 
-    # Priprav zoznam period setov, ktoré sú prítomné
-    period_sets = []
+    period_sets: list[tuple[str, list[dict]]] = []
     if headers.get("weeks"):
         period_sets.append(("WEEK", headers["weeks"]))
     if headers.get("months"):
@@ -180,13 +194,13 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     if headers.get("halves"):
         period_sets.append(("HALF", headers["halves"]))
 
-    # --- Preindexuj bunky pre rýchly prístup (row,col) -> value
-    cell_map = {}
-    for c in block.get("cells", []) or []:
+    # --- Preindexuj bunky pre rýchly prístup (row, col) -> value
+    cell_map: dict[tuple[int, int], object] = {}
+    for c in cells:
         cell_map[(c["row"], c["col"])] = c.get("value", None)
 
     # --- Prejdi riadky, kde je definovaná metrika
-    for cell in block.get("cells", []) or []:
+    for cell in cells:
         if metrics_col and cell.get("col") == metrics_col:
             metric_name = str(cell.get("value", "")).strip()
             row_id = cell.get("row")
@@ -194,7 +208,7 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
             for period_type, items in period_sets:
                 for item in items:
                     col_idx = item["col"]
-                    label = item["label"]  # Period (napr. "W1", "2025-01", "Q3", "H2")
+                    label = item["label"]  # napr. "W1", "Jan", "2025-01", "Q3", "H2"
                     raw = cell_map.get((row_id, col_idx), None)
 
                     quality = "OK"
@@ -227,9 +241,11 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
                             "Business": business,
                             "Metric": metric_name,
                             "PeriodType": period_type,
-                            "Period": label,  # v2: ponechávame label tak, ako prišlo (bez ďalšej normalizácie)
+                            "Period": label,
                             "PeriodKey": _normalize_period(
-                                period_type, label, meta.get("year") or meta.get("year_hint")
+                                period_type,
+                                label,
+                                meta.get("year") or meta.get("year_hint"),
                             ),
                             "Value": value,
                             "SourceBlockID": block_id,
