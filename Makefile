@@ -67,3 +67,15 @@ full: test-all
 daily:
 	cp daily/template.md daily/$(shell date +%F).md
 # ---------- koniec ----------
+
+health:
+	python scan_repo.py
+	python tools/update_status_preview.py
+
+health:
+	python scan_repo.py
+	python tools/update_status_apply.py
+
+status:
+	@echo "=== Project status (from project_status.yml) ==="
+	sed -n "1,80p" project_status.yml

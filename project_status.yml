@@ -1,22 +1,27 @@
-
 meta:
-  project_name: "Robot pre kódy"
-  version: "v1.0-RC"
-  author: "Michal Vajcik"
-  last_update: "2025-11-14"
-  path: "/Users/michalvajcik/Documents/robot-pre-kody"
-  description: "Framework na automatizáciu dátových procesov vo finančnom controllingu (retail, CEE)."
-
+  project_name: Robot pre kódy
+  version: v1.0-RC
+  author: Michal Vajcik
+  last_update: '2025-11-14'
+  path: /Users/michalvajcik/Documents/robot-pre-kody
+  description: Framework na automatizáciu dátových procesov vo finančnom controllingu
+    (retail, CEE).
 status:
   environment:
     git_repo: true
     venv_present: true
-    ci_workflows: ["tests.yml"]
+    ci_workflows:
+    - tests.yml
   codebase:
-    # presné čísla nechávame na scan_repo.py (repo_summary.yml)
     python_files_total_estimate: 40
     python_lines_total_estimate: 3000
-    main_dirs: ["src", "tests", "data_in", "data_stage", "data_out", ".github"]
+    main_dirs:
+    - src
+    - tests
+    - data_in
+    - data_stage
+    - data_out
+    - .github
   tests:
     total: 14
     passed: 14
@@ -24,46 +29,54 @@ status:
     pytest_ok: true
     ruff_ok: true
     flake8_ok: false
-
+  repo_health:
+    scanned_at: '2025-11-15 11:29:41'
+    python_files_total: 43
+    python_lines_total: 3125
+    tests_count: 16
+    pytest_ok: true
+    ruff_ok: true
+    flake8_ok: false
 quality_summary:
-  - "Transformačný robot má jednotný kontrakt výstupu (Country, Week, Metric, Value + meta)."
-  - "Všetky aktuálne testy (14) prechádzajú lokálne aj v CI (quick + full)."
-  - "Dummy test_autorun bol odstránený, pipeline je čistá."
-  - "DuckDB IO a výbery (YTD) majú vlastné testy."
-  - "repo_summary.yml generuje objektívny prehľad cez scan_repo.py."
-
+- Transformačný robot má jednotný kontrakt výstupu (Country, Week, Metric, Value +
+  meta).
+- Všetky aktuálne testy (14) prechádzajú lokálne aj v CI (quick + full).
+- Dummy test_autorun bol odstránený, pipeline je čistá.
+- DuckDB IO a výbery (YTD) majú vlastné testy.
+- repo_summary.yml generuje objektívny prehľad cez scan_repo.py.
 current_focus:
-  step: "A"
-  name: "Modularizácia transform_block na pipeline"
-  description: "Rozdeliť transformáciu na moduly loader → validator → transformer → exporter a udržať kontrakt výstupu stabilný."
+  step: A
+  name: Modularizácia transform_block na pipeline
+  description: Rozdeliť transformáciu na moduly loader → validator → transformer →
+    exporter a udržať kontrakt výstupu stabilný.
   success_criteria:
-    - "Existujú samostatné funkcie/ triedy pre loader, validator, transformer, exporter."
-    - "Všetky existujúce transform_* testy stále prechádzajú bez úpravy vstupov/výstupov."
-    - "Pridáme aspoň 1 nový test, ktorý skúša celý chain loader→validator→transformer→exporter."
-
+  - Existujú samostatné funkcie/ triedy pre loader, validator, transformer, exporter.
+  - Všetky existujúce transform_* testy stále prechádzajú bez úpravy vstupov/výstupov.
+  - Pridáme aspoň 1 nový test, ktorý skúša celý chain loader→validator→transformer→exporter.
 next_steps:
   short_term:
-    - "Identifikovať aktuálnu funkciu transform_block a navrhnúť rozbitie na 4 moduly."
-    - "Vytvoriť minimálny loader + validator bez zmeny kontraktu výstupu."
-    - "Doplniť testy, ktoré kontrolujú, že kontrakt zostal rovnaký."
+  - Identifikovať aktuálnu funkciu transform_block a navrhnúť rozbitie na 4 moduly.
+  - Vytvoriť minimálny loader + validator bez zmeny kontraktu výstupu.
+  - Doplniť testy, ktoré kontrolujú, že kontrakt zostal rovnaký.
   mid_term:
-    - "Oddeliť exporter (DuckDB/CSV/Excel) od transformácie."
-    - "Prepojiť scan_repo.py → automatickú aktualizáciu repo_summary.yml."
-    - "Pripraviť šablóny WR/DR/Inventory/Daily nad novou pipeline."
+  - Oddeliť exporter (DuckDB/CSV/Excel) od transformácie.
+  - Prepojiť scan_repo.py → automatickú aktualizáciu repo_summary.yml.
+  - Pripraviť šablóny WR/DR/Inventory/Daily nad novou pipeline.
   long_term:
-    - "Rozšíriť robotov o YTD a Stock reporty v CEO formáte."
-    - "Zjednotiť krajinové šablóny WR, DR, Inventory, Daily."
-    - "Prepojiť výstupy s Power BI."
-
+  - Rozšíriť robotov o YTD a Stock reporty v CEO formáte.
+  - Zjednotiť krajinové šablóny WR, DR, Inventory, Daily.
+  - Prepojiť výstupy s Power BI.
 lessons_learned:
-  - "Ping-pong pri opravovaní skriptov sa dá minimalizovať kombináciou testov a jasného kontraktu výstupu."
-  - "Konzistentný kontext (repo_summary + project_status + overview) šetrí čas pri každom novom chate."
-  - "Každý commit má mať krátky popis zmeny a info o testoch."
-  - "Projekt už funguje ako framework – cieľ je mať stabilnú pipeline, nie jednorazové skripty."
-
+- Ping-pong pri opravovaní skriptov sa dá minimalizovať kombináciou testov a jasného
+  kontraktu výstupu.
+- Konzistentný kontext (repo_summary + project_status + overview) šetrí čas pri každom
+  novom chate.
+- Každý commit má mať krátky popis zmeny a info o testoch.
+- Projekt už funguje ako framework – cieľ je mať stabilnú pipeline, nie jednorazové
+  skripty.
 ai_guidelines:
-  - "Vždy najprv over aktuálny stav repozitára z repo_summary.yml."
-  - "Používaj formát promptu: Kontext → Cieľ → Vstup → Výstup → Test."
-  - "Nemeň funkčné časti bez explicitného súhlasu – najprv navrhni diff."
-  - "Vždy validuj prostredie pred novým kódom (venv, PYTHONPATH, pytest)."
-  - "Aktuálny fokus: krok A – modularizácia transform_block na pipeline loader→validator→transformer→exporter."
+- Vždy najprv over aktuálny stav repozitára z repo_summary.yml.
+- 'Používaj formát promptu: Kontext → Cieľ → Vstup → Výstup → Test.'
+- Nemeň funkčné časti bez explicitného súhlasu – najprv navrhni diff.
+- Vždy validuj prostredie pred novým kódom (venv, PYTHONPATH, pytest).
+- 'Aktuálny fokus: krok A – modularizácia transform_block na pipeline loader→validator→transformer→exporter.'

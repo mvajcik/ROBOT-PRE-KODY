@@ -224,7 +224,10 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
                                     "block_id": block_id,
                                     "metric": metric_name,
                                     "period": label,
-                                    "detail": f"Non-numeric value: {raw}",
+                                    "detail": (
+                                        f"Non-numeric value for metric '{metric_name}', "
+                                        f"period '{label}': {raw!r}"
+                                    ),
                                 }
                             )
 
@@ -246,7 +249,25 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
                             "Notes": notes,
                         }
                     )
+    # --- Validator (shadow mode) ---
+    from src.pipeline.validator import validate_block
+
+    validation_issues = validate_block(loaded)
+    for issue in validation_issues:
+        # do transform audit NEPOSIELAME upozornenie na chýbajúci year/year_hint
+        if issue.message == "Block meta is missing year/year_hint.":
+            continue
+        audit_rows.append(
+            {
+                "level": issue.level,
+                "block_id": block_id,
+                "metric": None,
+                "period": None,
+                "detail": issue.message,
+            }
+        )
 
     data = pd.DataFrame(rows)
+
     audit = pd.DataFrame(audit_rows)
     return data, audit

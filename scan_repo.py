@@ -87,6 +87,15 @@ summary = {
         "per_dir": dir_stats,
     },
     "health_checks": {"pytest": pytest_res, "ruff": ruff_res, "flake8": flake8_res},
+    "repo_health": {
+        "scanned_at": now,
+        "python_files_total": len(all_py),
+        "python_lines_total": total_lines,
+        "tests_count": len(tests_py),
+        "pytest_ok": pytest_res["ok"],
+        "ruff_ok": ruff_res["ok"],
+        "flake8_ok": flake8_res["ok"],
+    },
     "recommendations": [
         "Add CI in .github/workflows if missing",
         "Ensure tests/ contains at least smoke tests",
