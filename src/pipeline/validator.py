@@ -55,6 +55,20 @@ def validate_block(loaded: LoadedBlock) -> List[ValidationIssue]:
             )
         )
 
+    # ak metric stĺpec existuje, skontrolujeme prázdne názvy metrík
+    if static_metric is not None:
+        metric_col = static_metric
+        for cell in loaded.cells:
+            if cell.get("col") == metric_col:
+                name = str(cell.get("value", "")).strip()
+                if not name:
+                    issues.append(
+                        ValidationIssue(
+                            level="WARN",
+                            message=f"Empty metric name in row {cell.get('row')}.",
+                        )
+                    )
+
     # kontrola: musíme mať aspoň jeden period set (weeks/months/quarters/halves)
     if not loaded.period_sets:
         issues.append(

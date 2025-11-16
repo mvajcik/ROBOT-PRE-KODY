@@ -179,6 +179,9 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     # použijeme loader na prípravu meta údajov a map
     loaded: LoadedBlock = load_block(block)
+    from src.pipeline.transformer import extract_metric_rows
+
+    _metric_rows, _metric_audit = extract_metric_rows(loaded)
 
     country = loaded.country
     business = loaded.business
@@ -249,6 +252,11 @@ def transform_block(block: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
                             "Notes": notes,
                         }
                     )
+    from src.pipeline.transformer import transform_loaded_block
+
+    # Shadow transformer – zatiaľ len skúšame rozhranie, jeho výstup nepoužívame
+    _transform_result = transform_loaded_block(loaded)
+
     # --- Validator (shadow mode) ---
     from src.pipeline.validator import validate_block
 
