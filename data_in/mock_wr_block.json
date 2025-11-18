@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "country_hint": "SK",
+    "business_hint": "Retail",
+    "block_id": "WR_TEST_01",
+    "year_hint": 2025
+  },
+  "headers": {
+    "static": { "Metric": 2 },
+    "weeks": [
+      {"col": 3, "label": "W1"},
+      {"col": 4, "label": "W2"},
+      {"col": 5, "label": "W3"}
+    ]
+  },
+  "cells": [
+    {"row": 1, "col": 2, "value": "Turnover"},
+    {"row": 1, "col": 3, "value": 100},
+    {"row": 1, "col": 4, "value": 120},
+    {"row": 1, "col": 5, "value": 90}
+  ]
+}

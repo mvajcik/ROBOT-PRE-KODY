@@ -1,5 +1,5 @@
 meta:
-  scanned_at: "2025-11-15 11:29:41"
+  scanned_at: "2025-11-17 04:54:34"
   root: "/Users/michalvajcik/Documents/robot-pre-kody"
   git_repo: true
   venv_present: true
@@ -20,9 +20,9 @@ inventory:
   ci_workflows:
     - "tests.yml"
 metrics:
-  python_files_total: 43
-  python_lines_total: 3125
-  tests_count: 16
+  python_files_total: 46
+  python_lines_total: 3278
+  tests_count: 18
   tests_files:
     - "tests/test_transform.py"
     - "tests/test_loader.py"
@@ -40,15 +40,17 @@ metrics:
     - "tests/test_duckdb_select.py"
     - "tests/test_transform_months.py"
     - "tests/test_transform_contract_min.py"
+    - "tests/test_transformer_basic.py"
+    - "tests/test_pipeline_chain.py"
   per_dir:
     src:
       exists: true
-      py_files: 17
-      py_lines: 1655
+      py_files: 18
+      py_lines: 1696
     tests:
       exists: true
-      py_files: 18
-      py_lines: 714
+      py_files: 20
+      py_lines: 786
     data_in:
       exists: true
       py_files: 0
@@ -69,7 +71,7 @@ health_checks:
   pytest:
     ok: true
     code: 0
-    out: "................                                                         [100%]\n16 passed in 0.32s"
+    out: "..................                                                       [100%]\n18 passed in 0.48s"
   ruff:
     ok: true
     code: 0
@@ -79,10 +81,10 @@ health_checks:
     code: null
     out: "command not found"
 repo_health:
-  scanned_at: "2025-11-15 11:29:41"
-  python_files_total: 43
-  python_lines_total: 3125
-  tests_count: 16
+  scanned_at: "2025-11-17 04:54:34"
+  python_files_total: 46
+  python_lines_total: 3278
+  tests_count: 18
   pytest_ok: true
   ruff_ok: true
   flake8_ok: false
